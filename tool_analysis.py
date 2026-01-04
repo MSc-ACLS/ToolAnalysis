@@ -28,6 +28,17 @@ import pandas as pd
 import matplotlib.pyplot as plt
 
 
+# --- Pretty labels for plots (Matplotlib mathtext) ---
+DISPLAY_LABELS = {
+    "Reactor": "Reactor",
+    "Electricity": "Electricity",
+    "CO2": r"CO$_2$",
+    "(NH4)2SO4": r"$(\mathrm{NH_4})_2\mathrm{SO_4}$",
+    "NaClO": r"$\mathrm{NaClO}$",
+    "Total": "Total",
+}
+
+
 def to_float(x) -> float:
     """Convert messy numeric strings (e.g. '1.25Ê', '-', '') to float or NaN."""
     if x is None or (isinstance(x, float) and np.isnan(x)):
@@ -121,8 +132,10 @@ def plot_total_vs_protein_conc(df: pd.DataFrame, outpath: str):
             textcoords="offset points"
         )
 
+    plt.xlim(left=0)
+    plt.ylim(bottom=0)
     plt.xlabel("Protein concentration (g/L)")
-    plt.ylabel("Total impact (kg CO2-eq per run)")
+    plt.ylabel(r"Total impact (kg CO$_2$-eq per run)")
     plt.title("Total impact vs protein concentration")
     plt.tight_layout()
     plt.savefig(outpath, dpi=300)
@@ -145,10 +158,15 @@ def plot_breakdown_stacked(df: pd.DataFrame, outpath: str):
     for p in parts:
         vals = d[f"{p}_per_gL_protein"].to_numpy(dtype=float)
         vals = np.nan_to_num(vals, nan=0.0)
-        plt.bar(d["label"], vals, bottom=bottom, label=p)
+        plt.bar(
+            d["label"],
+            vals,
+            bottom=bottom,
+            label=DISPLAY_LABELS.get(p, p),
+        )
         bottom += vals
 
-    plt.ylabel("Impact / protein concentration (kg CO2-eq · L / g protein)")
+    plt.ylabel(r"Impact / protein concentration (kg CO$_2$-eq per (g/L))")
     plt.xlabel("Experiment ID")
     plt.title("Impact intensity breakdown per protein concentration")
     plt.xticks(rotation=45, ha="right")
